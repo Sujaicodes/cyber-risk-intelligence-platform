@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cyber Risk Intelligence & Adaptive Defense Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+:root{
+  --cyan:#00F5FF;
+  --purple:#7A5FFF;
+  --pink:#FF3CAC;
+  --bg:#05060A;
+  --bg2:#080B12;
+  --bg3:#0D1117;
+  --text:#E6F1FF;
+  --text-dim:#8899AA;
+  --glow-cyan:0 0 20px #00F5FF80,0 0 40px #00F5FF40;
+  --glow-purple:0 0 20px #7A5FFF80,0 0 40px #7A5FFF40;
+  --glow-pink:0 0 20px #FF3CAC80,0 0 40px #FF3CAC40;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;cursor:none;}
+#cursor{position:fixed;width:12px;height:12px;border-radius:50%;background:var(--cyan);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s,width .2s,height .2s,background .2s;box-shadow:var(--glow-cyan);}
+#cursor-ring{position:fixed;width:36px;height:36px;border-radius:50%;border:1px solid var(--cyan);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .15s ease-out,width .3s,height .3s;opacity:.5;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:#05060A;}
+::-webkit-scrollbar-thumb{background:var(--cyan);border-radius:2px;}
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:16px 40px;background:rgba(5,6,10,.8);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,245,255,.12);}
+.nav-logo{font-family:'Orbitron',sans-serif;font-weight:800;font-size:1.1rem;color:var(--cyan);letter-spacing:3px;text-shadow:var(--glow-cyan);display:flex;align-items:center;gap:10px;}
+.logo-icon{width:28px;height:28px;border:2px solid var(--cyan);border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.logo-icon::before{content:'';position:absolute;width:10px;height:10px;background:var(--cyan);border-radius:50%;box-shadow:var(--glow-cyan);animation:pulse 2s infinite;}
+.nav-links{display:flex;gap:32px;}
+.nav-links a{color:var(--text-dim);text-decoration:none;font-size:.9rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;transition:color .3s;font-family:'Rajdhani',sans-serif;}
+.nav-links a:hover{color:var(--cyan);text-shadow:var(--glow-cyan);}
+.nav-cta{background:transparent;border:1px solid var(--cyan);color:var(--cyan);padding:8px 20px;font-family:'Orbitron',sans-serif;font-size:.75rem;letter-spacing:2px;cursor:pointer;transition:all .3s;text-transform:uppercase;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);}
+.nav-cta:hover{background:var(--cyan);color:var(--bg);box-shadow:var(--glow-cyan);}
+
+/* API STATUS BAR */
+#api-status-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:2000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 24px;
+  background:rgba(5,6,10,.92);
+  border-top:1px solid rgba(0,245,255,.12);
+  font-family:'Share Tech Mono',monospace;font-size:.72rem;
+}
+.api-status-left{display:flex;align-items:center;gap:16px;}
+.api-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.api-dot.ok{background:#00FF88;box-shadow:0 0 8px #00FF88;animation:pulse 2s infinite;}
+.api-dot.err{background:var(--pink);box-shadow:0 0 8px var(--pink);}
+.api-dot.loading{background:var(--cyan);animation:pulse 1s infinite;}
+#api-status-text{color:var(--text-dim);}
+#api-last-update{color:var(--text-dim);font-size:.68rem;}
+.api-refresh-btn{background:transparent;border:1px solid rgba(0,245,255,.3);color:var(--cyan);padding:3px 12px;font-family:'Share Tech Mono',monospace;font-size:.7rem;cursor:pointer;border-radius:3px;transition:all .2s;}
+.api-refresh-btn:hover{background:rgba(0,245,255,.1);}
+
+#hero{position:relative;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#hero-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;}
+.hero-content{position:relative;z-index:10;text-align:center;padding:20px;}
+.hero-badge{display:inline-block;border:1px solid var(--cyan);padding:6px 18px;font-family:'Share Tech Mono',monospace;font-size:.75rem;color:var(--cyan);letter-spacing:4px;margin-bottom:24px;animation:badgePulse 3s infinite;clip-path:polygon(6px 0,100% 0,100% calc(100%-6px),calc(100%-6px) 100%,0 100%,0 6px);}
+@keyframes badgePulse{0%,100%{box-shadow:none;}50%{box-shadow:var(--glow-cyan);}}
+.hero-title{font-family:'Orbitron',sans-serif;font-size:clamp(2rem,5vw,4.5rem);font-weight:900;line-height:1.05;margin-bottom:20px;background:linear-gradient(135deg,#fff 0%,var(--cyan) 50%,var(--purple) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(0,245,255,.4));}
+.hero-sub{font-size:clamp(1rem,2vw,1.3rem);color:var(--text-dim);max-width:580px;margin:0 auto 40px;line-height:1.7;font-family:'Rajdhani',sans-serif;font-weight:400;}
+.hero-sub span{color:var(--cyan);}
+.hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{background:linear-gradient(135deg,var(--cyan),var(--purple));border:none;color:#fff;padding:14px 32px;font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .3s;text-transform:uppercase;clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);position:relative;overflow:hidden;}
+.btn-primary::before{content:'';position:absolute;top:-50%;left:-100%;width:60%;height:200%;background:rgba(255,255,255,.2);transform:skewX(-20deg);transition:left .4s;}
+.btn-primary:hover::before{left:160%;}
+.btn-primary:hover{box-shadow:0 0 30px rgba(0,245,255,.6);}
+.btn-secondary{background:transparent;border:1px solid var(--purple);color:var(--text);padding:14px 32px;font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .3s;text-transform:uppercase;clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);}
+.btn-secondary:hover{border-color:var(--purple);background:rgba(122,95,255,.15);box-shadow:var(--glow-purple);}
+.hero-stats{display:flex;gap:40px;justify-content:center;margin-top:60px;flex-wrap:wrap;}
+.hero-stat{text-align:center;}
+.hero-stat-num{font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:800;color:var(--cyan);text-shadow:var(--glow-cyan);}
+.hero-stat-label{font-size:.75rem;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+.scroll-hint{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;animation:bounce 2s infinite;}
+.scroll-hint span{font-size:.7rem;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;}
+.scroll-arrow{width:20px;height:30px;border:1px solid var(--cyan);border-radius:10px;display:flex;justify-content:center;padding-top:6px;}
+.scroll-arrow::before{content:'';width:4px;height:8px;background:var(--cyan);border-radius:2px;animation:scrollDot 1.5s infinite;}
+@keyframes scrollDot{0%{transform:translateY(0);opacity:1;}100%{transform:translateY(10px);opacity:0;}}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(-8px);}}
+section{padding:100px 40px;}
+.section-header{text-align:center;margin-bottom:60px;}
+.section-tag{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:.75rem;color:var(--cyan);letter-spacing:4px;text-transform:uppercase;margin-bottom:16px;opacity:.8;}
+.section-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.6rem,3.5vw,3rem);font-weight:800;background:linear-gradient(135deg,#fff,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;}
+.section-sub{color:var(--text-dim);font-size:1.05rem;max-width:600px;margin:0 auto;line-height:1.7;}
+.grid-bg{position:absolute;top:0;left:0;right:0;bottom:0;background-image:linear-gradient(rgba(0,245,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+.glass-card{background:rgba(255,255,255,.03);border:1px solid rgba(0,245,255,.15);border-radius:16px;padding:28px;backdrop-filter:blur(12px);transition:all .4s;position:relative;overflow:hidden;}
+.glass-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;transition:opacity .4s;}
+.glass-card:hover{border-color:rgba(0,245,255,.4);background:rgba(0,245,255,.05);transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,245,255,.1);}
+.glass-card:hover::before{opacity:1;}
+#problem{position:relative;background:var(--bg2);}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;max-width:1100px;margin:0 auto 60px;}
+.stat-card{background:rgba(255,255,255,.03);border:1px solid rgba(0,245,255,.12);border-radius:12px;padding:32px 24px;text-align:center;transition:all .4s;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);transform:scaleX(0);transition:transform .4s;}
+.stat-card:hover::after{transform:scaleX(1);}
+.stat-card:hover{border-color:rgba(0,245,255,.3);background:rgba(0,245,255,.05);transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,245,255,.1);}
+.stat-num{font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:900;color:var(--cyan);text-shadow:var(--glow-cyan);margin-bottom:8px;}
+.stat-label{font-size:.85rem;color:var(--text-dim);letter-spacing:1px;}
+.threat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;max-width:1100px;margin:0 auto;}
+.threat-card-icon{width:48px;height:48px;border-radius:12px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;}
+#architecture{position:relative;background:var(--bg);}
+.arch-pipeline{max-width:900px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:0;}
+.arch-node{background:rgba(255,255,255,.04);border:1px solid rgba(0,245,255,.2);border-radius:12px;padding:20px 40px;width:100%;max-width:500px;text-align:center;transition:all .4s;cursor:pointer;position:relative;}
+.arch-node:hover{border-color:var(--cyan);background:rgba(0,245,255,.08);box-shadow:0 0 30px rgba(0,245,255,.2);}
+.arch-node-title{font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:700;color:var(--cyan);letter-spacing:2px;}
+.arch-node-desc{font-size:.8rem;color:var(--text-dim);margin-top:6px;display:none;}
+.arch-node:hover .arch-node-desc{display:block;}
+.arch-arrow{height:40px;width:2px;background:linear-gradient(var(--cyan),var(--purple));position:relative;}
+.arch-arrow::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid var(--purple);}
+.data-dot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--cyan);left:50%;transform:translateX(-50%);animation:dataDot 2s linear infinite;}
+@keyframes dataDot{0%{top:0;opacity:1;}100%{top:100%;opacity:0;}}
+#ai-engine{background:var(--bg2);}
+.nn-container{position:relative;width:100%;max-width:900px;margin:0 auto;height:280px;}
+#nn-canvas{width:100%;height:100%;}
+.algo-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;max-width:900px;margin:40px auto 0;}
+.algo-card{background:rgba(255,255,255,.03);border:1px solid rgba(122,95,255,.25);border-radius:12px;padding:24px;transition:all .4s;}
+.algo-card:hover{border-color:var(--purple);background:rgba(122,95,255,.08);box-shadow:0 0 30px rgba(122,95,255,.2);transform:translateY(-4px);}
+.algo-name{font-family:'Orbitron',sans-serif;font-size:.85rem;color:var(--purple);letter-spacing:2px;margin-bottom:8px;}
+#attack-chain{background:var(--bg);}
+.kill-chain{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:0;}
+.kc-step{display:flex;align-items:flex-start;gap:24px;position:relative;}
+.kc-step:not(:last-child)::after{content:'';position:absolute;left:23px;top:52px;bottom:-40px;width:2px;background:linear-gradient(var(--pink),var(--purple));z-index:0;}
+.kc-num{width:48px;height:48px;border-radius:50%;border:2px solid var(--pink);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:700;color:var(--pink);flex-shrink:0;z-index:1;background:var(--bg);box-shadow:0 0 20px rgba(255,60,172,.3);transition:all .4s;}
+.kc-step:hover .kc-num{background:var(--pink);color:#fff;box-shadow:var(--glow-pink);}
+.kc-content{background:rgba(255,60,172,.05);border:1px solid rgba(255,60,172,.15);border-radius:12px;padding:20px 24px;flex:1;margin-bottom:24px;transition:all .4s;}
+.kc-step:hover .kc-content{border-color:rgba(255,60,172,.4);background:rgba(255,60,172,.1);}
+.kc-title{font-family:'Orbitron',sans-serif;font-size:.9rem;color:var(--pink);font-weight:700;margin-bottom:6px;}
+.kc-desc{font-size:.85rem;color:var(--text-dim);line-height:1.6;}
+#risk-scoring{background:var(--bg2);}
+.risk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:1000px;margin:0 auto;}
+.risk-card{background:rgba(255,255,255,.03);border:1px solid rgba(0,245,255,.15);border-radius:16px;padding:32px;text-align:center;transition:all .4s;}
+.risk-card:hover{border-color:var(--cyan);box-shadow:0 0 40px rgba(0,245,255,.15);}
+.risk-label{font-family:'Orbitron',sans-serif;font-size:.8rem;letter-spacing:2px;color:var(--text-dim);margin-bottom:20px;}
+.gauge-wrap{position:relative;display:inline-block;margin-bottom:16px;}
+.gauge-svg{width:160px;height:80px;overflow:visible;}
+.gauge-score{font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:900;}
+.risk-status{font-size:.8rem;letter-spacing:2px;text-transform:uppercase;}
+#privacy{background:var(--bg);}
+.alert-list{max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+.alert-item{display:flex;align-items:center;gap:20px;background:rgba(255,60,172,.05);border:1px solid rgba(255,60,172,.2);border-radius:12px;padding:20px 24px;transition:all .4s;animation:alertIn .5s ease forwards;opacity:0;}
+.alert-item:nth-child(1){animation-delay:.1s;}
+.alert-item:nth-child(2){animation-delay:.3s;}
+.alert-item:nth-child(3){animation-delay:.5s;}
+@keyframes alertIn{from{opacity:0;transform:translateX(-20px);}to{opacity:1;transform:translateX(0);}}
+.alert-item:hover{border-color:var(--pink);background:rgba(255,60,172,.1);box-shadow:0 0 30px rgba(255,60,172,.15);}
+.alert-icon{width:44px;height:44px;border-radius:10px;background:rgba(255,60,172,.15);border:1px solid rgba(255,60,172,.3);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+.alert-severity{font-family:'Orbitron',sans-serif;font-size:.65rem;letter-spacing:2px;padding:3px 10px;border-radius:4px;text-transform:uppercase;margin-left:auto;}
+.sev-critical{background:rgba(255,60,172,.2);color:var(--pink);border:1px solid var(--pink);}
+.sev-high{background:rgba(255,100,0,.2);color:#FF6400;border:1px solid #FF6400;}
+.sev-medium{background:rgba(255,200,0,.15);color:#FFD700;border:1px solid #FFD700;}
+#defense{background:var(--bg2);}
+.defense-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;max-width:1000px;margin:0 auto;}
+.defense-card{background:rgba(122,95,255,.05);border:1px solid rgba(122,95,255,.2);border-radius:16px;padding:28px;text-align:center;transition:all .4s;cursor:pointer;}
+.defense-card:hover{border-color:var(--purple);background:rgba(122,95,255,.12);box-shadow:0 0 40px rgba(122,95,255,.25);transform:translateY(-6px);}
+.defense-icon{font-size:2.2rem;margin-bottom:16px;display:block;}
+.defense-title{font-family:'Orbitron',sans-serif;font-size:.85rem;color:var(--purple);font-weight:700;letter-spacing:1.5px;margin-bottom:10px;}
+.defense-desc{font-size:.8rem;color:var(--text-dim);line-height:1.6;}
+.ai-tag{display:inline-block;margin-top:12px;font-size:.65rem;letter-spacing:2px;color:var(--cyan);border:1px solid rgba(0,245,255,.3);padding:3px 10px;border-radius:4px;text-transform:uppercase;}
+#dashboard{background:var(--bg);}
+.soc-dashboard{max-width:1200px;margin:0 auto;background:rgba(255,255,255,.02);border:1px solid rgba(0,245,255,.12);border-radius:20px;overflow:hidden;}
+.dash-header{background:rgba(0,245,255,.05);border-bottom:1px solid rgba(0,245,255,.1);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;}
+.dash-title-bar{font-family:'Orbitron',sans-serif;font-size:.8rem;color:var(--cyan);letter-spacing:2px;display:flex;align-items:center;gap:12px;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,245,255,.5);}50%{box-shadow:0 0 0 8px rgba(0,245,255,0);}}
+.dash-body{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto;gap:16px;padding:20px;}
+.dash-widget{background:rgba(255,255,255,.03);border:1px solid rgba(0,245,255,.1);border-radius:12px;padding:20px;}
+.dash-widget.wide{grid-column:span 2;}
+.widget-title{font-family:'Orbitron',sans-serif;font-size:.7rem;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.widget-title::before{content:'';width:3px;height:14px;background:var(--cyan);border-radius:2px;}
+.mini-bar{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.mini-label{font-size:.75rem;color:var(--text-dim);width:100px;flex-shrink:0;}
+.mini-track{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;}
+.mini-fill{height:100%;border-radius:3px;transition:width 1s ease;}
+.mini-val{font-family:'Share Tech Mono',monospace;font-size:.75rem;color:var(--cyan);width:40px;text-align:right;}
+.threat-log{font-family:'Share Tech Mono',monospace;font-size:.72rem;}
+.log-line{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;gap:10px;}
+.log-time{color:var(--text-dim);}
+.log-ip{color:var(--cyan);}
+.log-evt{color:var(--pink);}
+.log-ok{color:#00FF88;}
+#radar-canvas{width:100%;height:160px;}
+#attack-map-canvas{width:100%;height:200px;}
+#techstack{background:var(--bg2);}
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;max-width:1000px;margin:0 auto;}
+.tech-item{background:rgba(255,255,255,.03);border:1px solid rgba(0,245,255,.1);border-radius:12px;padding:20px;text-align:center;transition:all .4s;}
+.tech-item:hover{border-color:var(--cyan);background:rgba(0,245,255,.06);transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,245,255,.15);}
+.tech-icon{font-size:2rem;margin-bottom:10px;display:block;}
+.tech-name{font-family:'Orbitron',sans-serif;font-size:.7rem;color:var(--text-dim);letter-spacing:1.5px;}
+.tech-category{font-size:.65rem;color:var(--cyan);margin-top:4px;letter-spacing:1px;}
+#team{background:var(--bg);}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;max-width:1000px;margin:0 auto;}
+.team-card{background:rgba(255,255,255,.03);border:1px solid rgba(122,95,255,.2);border-radius:16px;padding:32px 24px;text-align:center;transition:all .4s;position:relative;overflow:hidden;}
+.team-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(122,95,255,.06) 0%,transparent 60%);transition:opacity .4s;opacity:0;}
+.team-card:hover::before{opacity:1;}
+.team-card:hover{border-color:var(--purple);transform:translateY(-6px);box-shadow:0 20px 60px rgba(122,95,255,.2);}
+.team-avatar{width:72px;height:72px;border-radius:50%;margin:0 auto 16px;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:1.5rem;font-weight:900;color:#fff;border:2px solid rgba(122,95,255,.4);}
+.team-name{font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px;}
+.team-role{font-size:.8rem;color:var(--cyan);letter-spacing:1.5px;margin-bottom:16px;}
+.team-links{display:flex;justify-content:center;gap:12px;}
+.team-link{color:var(--text-dim);text-decoration:none;font-size:.75rem;letter-spacing:1.5px;border:1px solid rgba(255,255,255,.1);padding:5px 12px;border-radius:6px;transition:all .3s;font-family:'Rajdhani',sans-serif;font-weight:600;}
+.team-link:hover{color:var(--cyan);border-color:var(--cyan);}
+#cta{background:var(--bg2);text-align:center;padding:120px 40px;position:relative;overflow:hidden;}
+.cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(0,245,255,.08) 0%,transparent 70%);pointer-events:none;}
+.cta-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.8rem,4vw,3.5rem);font-weight:900;background:linear-gradient(135deg,#fff,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;}
+.cta-sub{color:var(--text-dim);font-size:1.1rem;max-width:500px;margin:0 auto 40px;}
+.btn-cta{background:linear-gradient(135deg,var(--cyan),var(--purple));border:none;color:#fff;padding:18px 48px;font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .3s;text-transform:uppercase;clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);}
+.btn-cta:hover{box-shadow:0 0 60px rgba(0,245,255,.5);transform:scale(1.05);}
+footer{background:var(--bg);border-top:1px solid rgba(0,245,255,.1);padding:40px;text-align:center;}
+.footer-logo{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:800;color:var(--cyan);letter-spacing:3px;margin-bottom:16px;}
+.footer-text{font-size:.8rem;color:var(--text-dim);}
+#particle-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:.4;}
+.scanline{position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,245,255,.007) 2px,rgba(0,245,255,.007) 4px);pointer-events:none;z-index:998;}
+.side-indicators{position:fixed;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:100;}
+.side-dot{width:6px;height:6px;border-radius:50%;background:rgba(0,245,255,.3);cursor:pointer;transition:all .3s;}
+.side-dot.active{background:var(--cyan);box-shadow:var(--glow-cyan);height:24px;border-radius:3px;}
+.fade-up{opacity:0;transform:translateY(30px);transition:opacity .8s,transform .8s;}
+.fade-up.visible{opacity:1;transform:translateY(0);}
+@media(max-width:768px){nav{padding:12px 20px;}.nav-links{display:none;}section{padding:70px 20px;}.dash-body{grid-template-columns:1fr;grid-template-rows:auto;}.dash-widget.wide{grid-column:span 1;}.arch-node{max-width:100%;}.hero-stats{gap:20px;}.side-indicators{display:none;}.hero-title{font-size:1.8rem;}}
+#anomaly-canvas{width:100%;height:150px;margin-top:20px;}
+.status-bar{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:40px;}
+.status-pill{display:flex;align-items:center;gap:8px;background:rgba(0,245,255,.06);border:1px solid rgba(0,245,255,.2);border-radius:20px;padding:8px 16px;font-family:'Share Tech Mono',monospace;font-size:.75rem;color:var(--text-dim);}
+.status-pill .dot{width:6px;height:6px;border-radius:50%;animation:pulse 2s infinite;}
+.dot-green{background:#00FF88;box-shadow:0 0 8px #00FF88;}
+.dot-yellow{background:#FFD700;box-shadow:0 0 8px #FFD700;}
+.dot-red{background:var(--pink);box-shadow:0 0 8px var(--pink);}
+
+/* ===== FIX CLICK BLOCKING LAYERS ===== */
+
+/* Allow clicking through visual overlays */
+#particle-canvas,
+.scanline,
+#hero-canvas,
+#cursor,
+#cursor-ring{
+  pointer-events: none !important;
+}
+
+/* Ensure interactive UI elements stay clickable */
+nav,
+section,
+.team-card,
+.team-links,
+.team-link,
+button,
+a{
+  position: relative;
+  z-index: 10;
+}
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<canvas id="particle-canvas"></canvas>
+
+<!-- API STATUS BAR -->
+<div id="api-status-bar">
+  <div class="api-status-left">
+    <div class="api-dot loading" id="api-dot"></div>
+    <span id="api-status-text">Connecting to http://127.0.0.1:8000...</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span id="api-last-update"></span>
+    <button class="api-refresh-btn" onclick="loadAPIData()">↻ Refresh Data</button>
+  </div>
+</div>
+
+<nav id="navbar">
+  <div class="nav-logo"><div class="logo-icon"></div>CRIDAP</div>
+  <div class="nav-links">
+    <a href="#problem">Threat</a>
+    <a href="#architecture">Platform</a>
+    <a href="#ai-engine">AI Engine</a>
+    <a href="#risk-scoring">Risk</a>
+    <a href="#dashboard">SOC</a>
+    <a href="#team">Team</a>
+  </div>
+  <button class="nav-cta" onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})">Live Demo</button>
+</nav>
+
+<div class="side-indicators">
+  <div class="side-dot active"></div><div class="side-dot"></div><div class="side-dot"></div>
+  <div class="side-dot"></div><div class="side-dot"></div><div class="side-dot"></div>
+  <div class="side-dot"></div><div class="side-dot"></div>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge">// SYSTEM ACTIVE — THREAT LEVEL: HIGH //</div>
+    <h1 class="hero-title">Cyber Risk Intelligence<br/>&amp; Adaptive Defense<br/>Platform</h1>
+    <p class="hero-sub"><span>AI-powered</span> detection, risk scoring, and adaptive cyber defense — monitoring your entire digital surface in real time.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="document.getElementById('architecture').scrollIntoView({behavior:'smooth'})">Explore Platform</button>
+      <button class="btn-secondary" onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})">View SOC Dashboard</button>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num" id="count1">—</div><div class="hero-stat-label">Events Processed</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="count2">—</div><div class="hero-stat-label">Anomalies Flagged</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="count3">—</div><div class="hero-stat-label">Privacy Alerts</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="count4">—</div><div class="hero-stat-label">Entities Scored</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint"><div class="scroll-arrow"></div><span>Scroll</span></div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="grid-bg"></div>
+  <div class="section-header fade-up">
+    <div class="section-tag"></div>
+    <h2 class="section-title">The Cyber Threat Landscape</h2>
+    <p class="section-sub">The digital battlefield has never been more dangerous. Every second, organizations face invisible adversaries.</p>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card fade-up"><div class="stat-num" data-count="10">0</div><div class="stat-label">M+ Cyber Attacks Daily</div></div>
+    <div class="stat-card fade-up"><div class="stat-num" data-count="95">0</div><div class="stat-label">% Breaches — Human Error</div></div>
+    <div class="stat-card fade-up"><div class="stat-num" data-count="4.5">0</div><div class="stat-label">M Avg Breach Cost ($)</div></div>
+    <div class="stat-card fade-up"><div class="stat-num" data-count="287">0</div><div class="stat-label">Days Avg Detection Time</div></div>
+  </div>
+  <div class="threat-cards">
+    <div class="glass-card fade-up"><div class="threat-card-icon" style="background:rgba(255,60,172,.1);border:1px solid rgba(255,60,172,.3);">⚡</div><div style="font-family:'Orbitron',sans-serif;font-size:.9rem;color:var(--pink);margin-bottom:10px;font-weight:700;">Escalating Attacks</div><p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;">Ransomware, APTs, and supply chain attacks growing 400% YoY. Traditional defenses can't keep pace.</p></div>
+    <div class="glass-card fade-up"><div class="threat-card-icon" style="background:rgba(0,245,255,.1);border:1px solid rgba(0,245,255,.3);">🔓</div><div style="font-family:'Orbitron',sans-serif;font-size:.9rem;color:var(--cyan);margin-bottom:10px;font-weight:700;">Massive Data Breaches</div><p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;">Billions of records exposed annually. Stolen credentials fuel credential-stuffing attacks at scale.</p></div>
+    <div class="glass-card fade-up"><div class="threat-card-icon" style="background:rgba(122,95,255,.1);border:1px solid rgba(122,95,255,.3);">👤</div><div style="font-family:'Orbitron',sans-serif;font-size:.9rem;color:var(--purple);margin-bottom:10px;font-weight:700;">Insider Threats</div><p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;">Malicious and negligent insiders responsible for 34% of incidents. Nearly impossible to detect without behavioral AI.</p></div>
+    <div class="glass-card fade-up"><div class="threat-card-icon" style="background:rgba(255,100,0,.1);border:1px solid rgba(255,100,0,.3);">⏱</div><div style="font-family:'Orbitron',sans-serif;font-size:.9rem;color:#FF6400;margin-bottom:10px;font-weight:700;">Delayed Response</div><p style="font-size:.85rem;color:var(--text-dim);line-height:1.7;">Average dwell time of 287 days. By the time threats are detected, irreparable damage is already done.</p></div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="section-header fade-up">
+    <div class="section-tag"></div>
+    <h2 class="section-title">Platform Architecture</h2>
+    <p class="section-sub">A unified pipeline from raw telemetry to intelligent, adaptive defense recommendations.</p>
+  </div>
+  <div class="arch-pipeline">
+    <div class="arch-node fade-up"><div style="font-size:.7rem;color:var(--text-dim);letter-spacing:2px;margin-bottom:4px;">INPUT LAYER</div><div class="arch-node-title">📡 Data Sources</div><div class="arch-node-desc">Multi-source ingestion: network logs, authentication events, application telemetry, endpoint signals.</div></div>
+    <div class="arch-arrow"><div class="data-dot"></div></div>
+    <div class="arch-node fade-up"><div class="arch-node-title">⚙️ Log Processing &amp; Enrichment</div><div class="arch-node-desc">Kafka streams, log normalization, deduplication, enrichment with threat intelligence feeds.</div></div>
+    <div class="arch-arrow"><div class="data-dot" style="animation-delay:.3s"></div></div>
+    <div class="arch-node fade-up"><div class="arch-node-title">🤖 ML Detection Engine</div><div class="arch-node-desc">Isolation Forest, Autoencoder, LSTM models running real-time behavioral anomaly detection.</div></div>
+    <div class="arch-arrow"><div class="data-dot" style="animation-delay:.6s"></div></div>
+    <div class="arch-node fade-up"><div class="arch-node-title">🔗 Attack Correlation</div><div class="arch-node-desc">MITRE ATT&CK mapping, kill chain reconstruction, lateral movement detection.</div></div>
+    <div class="arch-arrow"><div class="data-dot" style="animation-delay:.9s"></div></div>
+    <div class="arch-node fade-up"><div class="arch-node-title">📊 Risk Scoring Engine</div><div class="arch-node-desc">Dynamic risk scores for users, devices, and services based on behavioral context and threat intelligence.</div></div>
+    <div class="arch-arrow"><div class="data-dot" style="animation-delay:1.2s"></div></div>
+    <div class="arch-node fade-up"><div class="arch-node-title">🔒 Privacy Monitoring</div><div class="arch-node-desc">Privacy violation detection: unauthorized data access, bulk downloads, abnormal API calls.</div></div>
+    <div class="arch-arrow"><div class="data-dot" style="animation-delay:1.5s"></div></div>
+    <div class="arch-node fade-up"><div class="arch-node-title">🛡️ Adaptive Defense Advisor</div><div class="arch-node-desc">AI-generated countermeasures: MFA enforcement, IP blocking, endpoint isolation, patch prioritization.</div></div>
+    <div class="arch-arrow"><div class="data-dot" style="animation-delay:1.8s"></div></div>
+    <div class="arch-node fade-up" style="border-color:rgba(0,245,255,.4);background:rgba(0,245,255,.06);"><div class="arch-node-title">🖥️ Security Intelligence Dashboard</div><div class="arch-node-desc">Unified SOC view: threat maps, live alerts, risk scores, attack timelines, data flow analytics.</div></div>
+  </div>
+</section>
+
+<!-- AI ENGINE -->
+<section id="ai-engine">
+  <div class="grid-bg"></div>
+  <div class="section-header fade-up">
+    <div class="section-tag"></div>
+    <h2 class="section-title">AI Detection Engine</h2>
+    <p class="section-sub">Multi-model ensemble detecting behavioral anomalies, pattern deviations, and zero-day attacks.</p>
+  </div>
+  <div class="nn-container fade-up"><canvas id="nn-canvas"></canvas></div>
+  <canvas id="anomaly-canvas" class="fade-up"></canvas>
+  <div class="algo-cards">
+    <div class="algo-card fade-up"><div class="algo-name">Isolation Forest</div><p style="font-size:.82rem;color:var(--text-dim);line-height:1.6;">Detects outliers in high-dimensional feature spaces. Identifies anomalous login patterns, network spikes, and process anomalies without labelled data.</p></div>
+    <div class="algo-card fade-up"><div class="algo-name">Autoencoder (AE)</div><p style="font-size:.82rem;color:var(--text-dim);line-height:1.6;">Deep neural reconstruction model. High reconstruction error signals deviation from normal user/device behavior baselines learned over time.</p></div>
+    <div class="algo-card fade-up"><div class="algo-name">LSTM Time-Series</div><p style="font-size:.82rem;color:var(--text-dim);line-height:1.6;">Temporal sequence modelling for detecting anomalous event progressions — the precursors to lateral movement and privilege escalation.</p></div>
+  </div>
+</section>
+
+<!-- ATTACK CHAIN -->
+<section id="attack-chain">
+  <div class="section-header fade-up">
+    <div class="section-tag"></div>
+    <h2 class="section-title">Attack Chain Reconstruction</h2>
+    <p class="section-sub">Real-time visualization of adversary kill chains mapped to MITRE ATT&CK framework.</p>
+  </div>
+  <div class="kill-chain" id="kill-chain-container">
+    <!-- Populated by API -->
+    <div class="kc-step fade-up"><div class="kc-num">01</div><div class="kc-content"><div class="kc-title">📧 Phishing Email Delivery</div><div class="kc-desc">Spear-phishing email sent to finance team. Malicious attachment triggers macro execution. T1566 — MITRE ATT&CK Initial Access.</div></div></div>
+    <div class="kc-step fade-up"><div class="kc-num">02</div><div class="kc-content"><div class="kc-title">🔑 Credential Login Anomaly</div><div class="kc-desc">Compromised credentials used from foreign IP. Login at 03:14 UTC — 4 standard deviations outside user baseline. Risk score elevated to 87.</div></div></div>
+    <div class="kc-step fade-up"><div class="kc-num">03</div><div class="kc-content"><div class="kc-title">⬆️ Privilege Escalation</div><div class="kc-desc">Unauthorized attempt to escalate to Domain Admin. Token impersonation detected. T1078 — Valid Accounts abuse. Lateral movement to 3 hosts in 6 minutes.</div></div></div>
+    <div class="kc-step fade-up"><div class="kc-num">04</div><div class="kc-content"><div class="kc-title">💾 Sensitive Data Exfiltration</div><div class="kc-desc">2.3 GB bulk database query on HR schema — 14× above baseline. Data staged to temp directory. Defense Advisor triggers isolation.</div></div></div>
+  </div>
+</section>
+
+<!-- RISK SCORING -->
+<section id="risk-scoring">
+  <div class="grid-bg"></div>
+  <div class="section-header fade-up">
+    <div class="section-tag"></div>
+    <h2 class="section-title">Dynamic Risk Scoring</h2>
+    <p class="section-sub">Contextual, real-time risk quantification for every user, device, and service in your environment.</p>
+  </div>
+  <div class="status-bar fade-up" id="risk-status-bar">
+    <div class="status-pill"><span class="dot dot-red"></span><span id="status-critical">Loading...</span></div>
+    <div class="status-pill"><span class="dot dot-yellow"></span><span id="status-medium">Loading...</span></div>
+    <div class="status-pill"><span class="dot dot-green"></span><span id="status-secure">Loading...</span></div>
+    <div class="status-pill"><span class="dot dot-green"></span>LIVE DATA</div>
+  </div>
+  <div class="risk-grid" id="risk-grid-container">
+    <!-- Populated dynamically by API -->
+  </div>
+</section>
+
+<!-- PRIVACY MONITORING -->
+<section id="privacy">
+  <div class="section-header fade-up">
+    <div class="section-tag"></div>
+    <h2 class="section-title">Privacy Monitoring</h2>
+    <p class="section-sub">Active surveillance of data access patterns, detecting policy violations and potential exfiltration.</p>
+  </div>
+  <div class="alert-list" id="privacy-alert-list">
+    <!-- Populated dynamically by API -->
+  </div>
+</section>
+
+<!-- ADAPTIVE DEFENSE -->
+<section id="defense">
+  <div class="grid-bg"></div>
+  <div class="section-header fade-up">
+    <div class="section-tag"></div>
+    <h2 class="section-title">Adaptive Defense Advisor</h2>
+    <p class="section-sub">AI-generated countermeasure recommendations with severity prioritization and one-click deployment.</p>
+  </div>
+  <div class="defense-grid">
+    <div class="defense-card fade-up"><span class="defense-icon">🔐</span><div class="defense-title">Enforce MFA</div><div class="defense-desc">Immediately require multi-factor authentication for all accounts with risk score &gt;70. Estimated risk reduction: 43%.</div><span class="ai-tag">AI Recommended</span></div>
+    <div class="defense-card fade-up"><span class="defense-icon">🚫</span><div class="defense-title">Block Suspicious IPs</div><div class="defense-desc">Auto-block 47 IPs flagged across 3 threat intel feeds. Implements at perimeter firewall with zero downtime.</div><span class="ai-tag">Automated</span></div>
+    <div class="defense-card fade-up"><span class="defense-icon">🔌</span><div class="defense-title">Isolate Endpoint</div><div class="defense-desc">Network-isolate compromised host WS-047 while preserving forensic evidence. EDR quarantine in 2 seconds.</div><span class="ai-tag">Critical Action</span></div>
+    <div class="defense-card fade-up"><span class="defense-icon">🩹</span><div class="defense-title">Patch Vulnerable Service</div><div class="defense-desc">Priority patch for Apache CVE-2023-44487 (CVSS 7.5) on 12 exposed endpoints. Auto-scheduled for low-traffic window.</div><span class="ai-tag">Prioritized</span></div>
+    <div class="defense-card fade-up"><span class="defense-icon">🔑</span><div class="defense-title">Revoke API Keys</div><div class="defense-desc">Rotate and revoke 3 compromised API credentials. Issue new keys with reduced scope and rate limiting applied.</div><span class="ai-tag">Automated</span></div>
+    <div class="defense-card fade-up"><span class="defense-icon">📋</span><div class="defense-title">Escalate to SOC</div><div class="defense-desc">Alert Tier 2 analyst with full kill chain report, evidence package, and recommended investigation playbook.</div><span class="ai-tag">Human-in-loop</span></div>
+  </div>
+</section>
+
+<!-- SOC DASHBOARD -->
+<section id="dashboard">
+  <div class="section-header fade-up">
+    <div class="section-tag"></div>
+    <h2 class="section-title">Security Intelligence Dashboard</h2>
+    <p class="section-sub">Unified SOC command center with real-time threat intelligence, anomaly alerts, and adaptive insights.</p>
+  </div>
+  <div class="soc-dashboard fade-up">
+    <div class="dash-header">
+      <div class="dash-title-bar"><div class="live-dot"></div>CRIDAP SECURITY OPERATIONS CENTER — LIVE</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--text-dim);" id="dash-time">--:--:-- UTC</div>
+    </div>
+    <div class="dash-body">
+      <div class="dash-widget">
+        <div class="widget-title">Threat Distribution</div>
+        <div class="mini-bar"><span class="mini-label">Malware</span><div class="mini-track"><div class="mini-fill" style="width:0%;background:linear-gradient(90deg,var(--pink),#FF6400);" data-fill="78"></div></div><span class="mini-val">78%</span></div>
+        <div class="mini-bar"><span class="mini-label">Phishing</span><div class="mini-track"><div class="mini-fill" style="width:0%;background:linear-gradient(90deg,var(--cyan),var(--purple));" data-fill="62"></div></div><span class="mini-val">62%</span></div>
+        <div class="mini-bar"><span class="mini-label">Insider</span><div class="mini-track"><div class="mini-fill" style="width:0%;background:linear-gradient(90deg,var(--purple),var(--pink));" data-fill="45"></div></div><span class="mini-val">45%</span></div>
+        <div class="mini-bar"><span class="mini-label">DDoS</span><div class="mini-track"><div class="mini-fill" style="width:0%;background:linear-gradient(90deg,#FFD700,#FF6400);" data-fill="31"></div></div><span class="mini-val">31%</span></div>
+      </div>
+      <div class="dash-widget">
+        <div class="widget-title">Anomaly Radar</div>
+        <canvas id="radar-canvas"></canvas>
+      </div>
+      <div class="dash-widget">
+        <div class="widget-title">Risk Summary — Live</div>
+        <div id="soc-risk-summary" style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+          <div style="display:flex;justify-content:space-between;padding:8px;background:rgba(255,60,172,.08);border-radius:6px;border:1px solid rgba(255,60,172,.2);"><span style="font-size:.78rem;color:var(--text-dim);">Critical</span><span style="font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--pink);" id="soc-critical">—</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px;background:rgba(255,215,0,.06);border-radius:6px;border:1px solid rgba(255,215,0,.2);"><span style="font-size:.78rem;color:var(--text-dim);">High</span><span style="font-family:'Share Tech Mono',monospace;font-size:.78rem;color:#FFD700;" id="soc-high">—</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px;background:rgba(0,255,136,.05);border-radius:6px;border:1px solid rgba(0,255,136,.15);"><span style="font-size:.78rem;color:var(--text-dim);">Low / Secure</span><span style="font-family:'Share Tech Mono',monospace;font-size:.78rem;color:#00FF88;" id="soc-secure">—</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px;background:rgba(0,245,255,.05);border-radius:6px;"><span style="font-size:.78rem;color:var(--text-dim);">Total Events</span><span style="font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--cyan);" id="soc-events">—</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px;background:rgba(0,245,255,.05);border-radius:6px;"><span style="font-size:.78rem;color:var(--text-dim);">Privacy Alerts</span><span style="font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--pink);" id="soc-privacy">—</span></div>
+        </div>
+      </div>
+      <div class="dash-widget wide">
+        <div class="widget-title">Live Threat Log</div>
+        <div class="threat-log" id="threat-log">
+          <div class="log-line"><span class="log-time">--:--:--</span><span class="log-ip">Connecting...</span><span class="log-evt">AWAITING_API</span><span style="color:var(--cyan);margin-left:auto;">INIT</span></div>
+        </div>
+      </div>
+      <div class="dash-widget">
+        <div class="widget-title">Attack Map</div>
+        <canvas id="attack-map-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section id="techstack">
+  <div class="grid-bg"></div>
+  <div class="section-header fade-up">
+    <div class="section-tag"></div>
+    <h2 class="section-title">Technology Stack</h2>
+    <p class="section-sub">Built on battle-tested, scalable, and enterprise-grade technologies.</p>
+  </div>
+  <div class="tech-grid">
+    <div class="tech-item fade-up"><span class="tech-icon">🐍</span><div class="tech-name">Python</div><div class="tech-category">Backend / AI</div></div>
+    <div class="tech-item fade-up"><span class="tech-icon">⚡</span><div class="tech-name">FastAPI</div><div class="tech-category">REST API</div></div>
+    <div class="tech-item fade-up"><span class="tech-icon">🔬</span><div class="tech-name">Scikit-learn</div><div class="tech-category">ML</div></div>
+    <div class="tech-item fade-up"><span class="tech-icon">🤖</span><div class="tech-name">Isolation Forest</div><div class="tech-category">Anomaly Detection</div></div>
+    <div class="tech-item fade-up"><span class="tech-icon">🔷</span><div class="tech-name">Three.js</div><div class="tech-category">3D / WebGL</div></div>
+    <div class="tech-item fade-up"><span class="tech-icon">📊</span><div class="tech-name">MITRE ATT&CK</div><div class="tech-category">Framework</div></div>
+    <div class="tech-item fade-up"><span class="tech-icon">🐳</span><div class="tech-name">Docker</div><div class="tech-category">Infrastructure</div></div>
+    <div class="tech-item fade-up"><span class="tech-icon">📈</span><div class="tech-name">Loguru</div><div class="tech-category">Observability</div></div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <div class="section-header fade-up">
+    <div class="section-tag"></div>
+    <h2 class="section-title">The Team</h2>
+    <p class="section-sub">Engineers, AI researchers, and security experts building the next generation of cyber defense.</p>
+  </div>
+  <div class="team-grid" style="max-width:600px;margin:0 auto;">
+    <div class="team-card fade-up"><div class="team-avatar">AV</div><div class="team-name">Aishwary Vansh</div><div class="team-role">Full Stack Developer &amp; System Architect</div><div class="team-links"><a href="https://www.linkedin.com/in/aishwary-vansh/" class="team-link" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://github.com/aishwary-vansh" class="team-link" target="_blank" rel="noopener noreferrer">GitHub</a></div></div>
+    <div class="team-card fade-up"><div class="team-avatar">SS</div><div class="team-name">Sujai Shukla</div><div class="team-role">Machine Learning &amp; Cyber Security Engineer</div><div class="team-links"><a href="https://www.linkedin.com/in/sujai-shukla-74a3413b6" class="team-link" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://github.com/Sujaicodes" class="team-link" target="_blank" rel="noopener noreferrer">GitHub</a></div></div>
+</div>
+</section>
+
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-glow"></div>
+  <div class="grid-bg"></div>
+  <div class="fade-up">
+    <div class="section-tag"></div>
+    <h2 class="cta-title">Activate Your Cyber<br/>Defense Command Center</h2>
+    <p class="cta-sub">Join the next generation of AI-powered security operations. Real-time. Adaptive. Unstoppable.</p>
+    <button class="btn-cta">Explore the Cyber Defense Platform</button>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">CRIDAP</div>
+  <p class="footer-text">Cyber Risk Intelligence &amp; Adaptive Defense Platform <br/>
+  <span style="color:var(--cyan);">Protecting digital infrastructure through AI-powered intelligence.</span></p>
+</footer>
+
+<script>
+// ════════════════════════════════════════════
+//  BACKEND API INTEGRATION
+// ════════════════════════════════════════════
+const API = 'http://127.0.0.1:8000';
+
+const ALERT_ICONS = {
+  'PRIV-001':'💾','PRIV-002':'🌙','PRIV-003':'📱','PRIV-004':'🔌','PRIV-005':'🔀'
+};
+const ALERT_LABELS = {
+  'PRIV-001':'Bulk Sensitive Data Download',
+  'PRIV-002':'Off-Hours Privileged Access',
+  'PRIV-003':'New Device Accessing Sensitive Data',
+  'PRIV-004':'High-Volume API Data Extraction',
+  'PRIV-005':'Lateral Movement + Data Access'
+};
+
+function setApiStatus(state, msg) {
+  const dot = document.getElementById('api-dot');
+  const txt = document.getElementById('api-status-text');
+  dot.className = 'api-dot ' + state;
+  txt.textContent = msg;
+}
+
+function animCount(el, target, suffix, duration) {
+  if (!el) return;
+  let startTime = null;
+  const isDecimal = target % 1 !== 0;
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    const progress = Math.min((ts - startTime) / duration, 1);
+    const val = isDecimal ? (progress * target).toFixed(1) : Math.floor(progress * target);
+    el.textContent = val + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function scoreColor(score) {
+  if (score >= 80) return '#FF3CAC';
+  if (score >= 60) return '#FF3CAC';
+  if (score >= 35) return '#FFD700';
+  return '#00F5FF';
+}
+function scoreLabel(level) {
+  const map = { CRITICAL:'🚨 CRITICAL', HIGH:'⚠ HIGH RISK', MEDIUM:'⚡ MEDIUM RISK', LOW:'✓ LOW RISK' };
+  return map[level] || level;
+}
+function riskStatusColor(level) {
+  return { CRITICAL:'var(--pink)', HIGH:'#FF6400', MEDIUM:'#FFD700', LOW:'#00FF88' }[level] || 'var(--cyan)';
+}
+
+function renderRiskGauge(entity, score, risk_level, factors, index) {
+  const color = scoreColor(score);
+  const dashOffset = 220 - (score / 100) * 220;
+  const gradId = 'rg' + index;
+  const gradColors = score >= 60
+    ? `<stop offset="0%" style="stop-color:#00F5FF"/><stop offset="100%" style="stop-color:#FF3CAC"/>`
+    : score >= 35
+    ? `<stop offset="0%" style="stop-color:#00F5FF"/><stop offset="100%" style="stop-color:#FFD700"/>`
+    : `<stop offset="0%" style="stop-color:#00F5FF"/><stop offset="100%" style="stop-color:#00FF88"/>`;
+
+  return `
+  <div class="risk-card fade-up" style="animation-delay:${index*0.15}s;">
+    <div class="risk-label">${entity.toUpperCase().replace('.','·').replace('_',' ')}</div>
+    <div class="gauge-wrap">
+      <svg class="gauge-svg" viewBox="-10 -10 180 90">
+        <path d="M 10 80 A 70 70 0 0 1 150 80" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="10" stroke-linecap="round"/>
+        <path d="M 10 80 A 70 70 0 0 1 150 80" fill="none" stroke="url(#${gradId})" stroke-width="10" stroke-linecap="round"
+          stroke-dasharray="220" stroke-dashoffset="${dashOffset}" style="transition:stroke-dashoffset 1.5s ease;"/>
+        <defs>
+          <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="0%">${gradColors}</linearGradient>
+        </defs>
+        <text x="80" y="75" text-anchor="middle" fill="${color}" font-size="28"
+          font-family="Orbitron,sans-serif" font-weight="900">${score}</text>
+      </svg>
+    </div>
+    <div class="risk-status" style="color:${color};">${scoreLabel(risk_level)}</div>
+    <div style="margin-top:12px;font-size:.75rem;color:var(--text-dim);">
+      ${factors.length > 0 ? factors.join(' · ') : 'No significant risk factors'}
+    </div>
+  </div>`;
+}
+
+function renderPrivacyAlert(alert, index) {
+  const sevClass = { CRITICAL:'sev-critical', HIGH:'sev-high', MEDIUM:'sev-medium' }[alert.severity] || 'sev-medium';
+  const icon = ALERT_ICONS[alert.rule_id] || '🔒';
+  const label = ALERT_LABELS[alert.rule_id] || alert.rule_name;
+  const time = alert.timestamp ? alert.timestamp.replace('T',' ').slice(0,19) : '';
+  return `
+  <div class="alert-item" style="animation-delay:${index*0.15}s;">
+    <div class="alert-icon">${icon}</div>
+    <div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:.85rem;color:var(--text);font-weight:700;margin-bottom:4px;">${label}</div>
+      <div style="font-size:.8rem;color:var(--text-dim);">
+        entity: <span style="color:var(--cyan);">${alert.entity}</span> ·
+        ${alert.data_mb ? alert.data_mb.toFixed(1)+' MB · ' : ''}
+        ${time}
+      </div>
+    </div>
+    <span class="alert-severity ${sevClass}">${alert.severity}</span>
+  </div>`;
+}
+
+async function loadAPIData() {
+  setApiStatus('loading', 'Fetching live data from http://127.0.0.1:8000...');
+  try {
+    const [summary, scores, privAlerts] = await Promise.all([
+      fetch(API + '/summary').then(r => r.json()),
+      fetch(API + '/risk-scores').then(r => r.json()),
+      fetch(API + '/privacy-alerts').then(r => r.json()),
+    ]);
+
+    // ── STATUS BAR ──
+    setApiStatus('ok', 'API Connected · http://127.0.0.1:8000 · Live data active');
+    document.getElementById('api-last-update').textContent =
+      'Last updated: ' + new Date().toLocaleTimeString();
+
+    // ── HERO COUNTERS ──
+    animCount(document.getElementById('count1'), summary.total_events, '', 1800);
+    animCount(document.getElementById('count2'), summary.anomalies_detected, '', 1500);
+    animCount(document.getElementById('count3'), summary.privacy_alerts, '', 2000);
+    animCount(document.getElementById('count4'), scores.length, '', 1200);
+
+    // ── SOC RISK SUMMARY WIDGET ──
+    const critCount = scores.filter(s => s.risk_level === 'CRITICAL').length;
+    const highCount = scores.filter(s => s.risk_level === 'HIGH').length;
+    const lowCount  = scores.filter(s => ['LOW','MEDIUM'].includes(s.risk_level)).length;
+    document.getElementById('soc-critical').textContent = critCount + ' entities';
+    document.getElementById('soc-high').textContent = highCount + ' entities';
+    document.getElementById('soc-secure').textContent = lowCount + ' entities';
+    document.getElementById('soc-events').textContent = summary.total_events;
+    document.getElementById('soc-privacy').textContent = summary.privacy_alerts + ' alerts';
+
+    // ── RISK STATUS BAR ──
+    document.getElementById('status-critical').textContent =
+      `CRITICAL: ${critCount} entities`;
+    document.getElementById('status-medium').textContent =
+      `HIGH/MEDIUM: ${highCount} entities`;
+    document.getElementById('status-secure').textContent =
+      `SECURE: ${lowCount} entities`;
+
+    // ── RISK SCORING GAUGES ──
+    const riskContainer = document.getElementById('risk-grid-container');
+    riskContainer.innerHTML = scores.map((s, i) =>
+      renderRiskGauge(s.entity, s.score, s.risk_level, s.contributing_factors, i)
+    ).join('');
+
+    // ── PRIVACY ALERTS ──
+    const privContainer = document.getElementById('privacy-alert-list');
+    if (privAlerts.length === 0) {
+      privContainer.innerHTML = '<div style="text-align:center;color:var(--text-dim);font-family:Share Tech Mono,monospace;padding:40px;">No privacy alerts detected.</div>';
+    } else {
+      // Deduplicate by rule_id + entity, take first occurrence
+      const seen = new Set();
+      const unique = privAlerts.filter(a => {
+        const key = a.rule_id + '|' + a.entity;
+        if (seen.has(key)) return false;
+        seen.add(key); return true;
+      });
+      privContainer.innerHTML = unique.slice(0, 6).map((a, i) => renderPrivacyAlert(a, i)).join('');
+    }
+
+    // ── LIVE THREAT LOG from privacy alerts ──
+    const logEl = document.getElementById('threat-log');
+    const logLines = privAlerts.slice(0, 8).map(a => {
+      const t = a.timestamp ? a.timestamp.slice(11, 19) : '--:--:--';
+      const evtMap = { 'PRIV-001':'BULK_DOWNLOAD', 'PRIV-002':'OFF_HOURS_ACCESS',
+                       'PRIV-003':'NEW_DEVICE_ALERT', 'PRIV-004':'API_EXTRACTION', 'PRIV-005':'LATERAL_MOVE' };
+      const evt = evtMap[a.rule_id] || 'ANOMALY';
+      const statusColor = { CRITICAL:'var(--pink)', HIGH:'#FF6400', MEDIUM:'#FFD700' }[a.severity] || '#00FF88';
+      return `<div class="log-line">
+        <span class="log-time">${t}</span>
+        <span class="log-ip">${a.entity}</span>
+        <span class="log-evt">${evt}</span>
+        <span style="color:${statusColor};margin-left:auto;">${a.severity}</span>
+      </div>`;
+    });
+    logEl.innerHTML = logLines.join('');
+
+    // Re-apply scroll observer to new elements
+    document.querySelectorAll('.risk-card, .alert-item').forEach(el => observer.observe(el));
+
+  } catch (err) {
+    setApiStatus('err', '⚠ API Offline — run: $env:PYTHONPATH="."; uvicorn src.dashboard.api:app --reload');
+    console.error('API error:', err);
+
+    // Fallback values
+    document.getElementById('count1').textContent = '—';
+    document.getElementById('count2').textContent = '—';
+    document.getElementById('count3').textContent = '—';
+    document.getElementById('count4').textContent = '—';
+  }
+}
+
+// Auto-refresh every 30 seconds
+loadAPIData();
+setInterval(loadAPIData, 30000);
+
+// ════════════════════════════════════════════
+//  CURSOR
+// ════════════════════════════════════════════
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);}
+animRing();
+document.querySelectorAll('a,button,.glass-card,.arch-node,.team-card,.defense-card,.algo-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.style.width='20px';cursor.style.height='20px';cursor.style.background='var(--pink)';ring.style.width='60px';ring.style.height='60px';});
+  el.addEventListener('mouseleave',()=>{cursor.style.width='12px';cursor.style.height='12px';cursor.style.background='var(--cyan)';ring.style.width='36px';ring.style.height='36px';});
+});
+
+// ════════════════════════════════════════════
+//  HERO 3D GLOBE
+// ════════════════════════════════════════════
+(function(){
+  const canvas=document.getElementById('hero-canvas');
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,.1,1000);
+  camera.position.z=5;
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  const geo=new THREE.SphereGeometry(2,64,64);
+  const mat=new THREE.MeshPhongMaterial({color:0x05060A,wireframe:false,transparent:true,opacity:.9});
+  const globe=new THREE.Mesh(geo,mat);
+  scene.add(globe);
+  const wgeo=new THREE.SphereGeometry(2.01,32,32);
+  const wmat=new THREE.MeshBasicMaterial({color:0x00F5FF,wireframe:true,transparent:true,opacity:.08});
+  const wireSphere=new THREE.Mesh(wgeo,wmat);
+  scene.add(wireSphere);
+  const glowGeo=new THREE.SphereGeometry(2.2,32,32);
+  const glowMat=new THREE.MeshBasicMaterial({color:0x00F5FF,transparent:true,opacity:.03,side:THREE.BackSide});
+  scene.add(new THREE.Mesh(glowGeo,glowMat));
+  const pCount=3000;const pGeo=new THREE.BufferGeometry();const pPos=new Float32Array(pCount*3);
+  for(let i=0;i<pCount;i++){pPos[i*3]=(Math.random()-.5)*20;pPos[i*3+1]=(Math.random()-.5)*20;pPos[i*3+2]=(Math.random()-.5)*20;}
+  pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
+  const pMat=new THREE.PointsMaterial({color:0x00F5FF,size:.03,transparent:true,opacity:.5});
+  const particles=new THREE.Points(pGeo,pMat);
+  scene.add(particles);
+  const attackLines=[];
+  function createAttackLine(){
+    const phi1=Math.random()*Math.PI*2,theta1=Math.random()*Math.PI;
+    const phi2=Math.random()*Math.PI*2,theta2=Math.random()*Math.PI;
+    const r=2.05;
+    const s=new THREE.Vector3(r*Math.sin(theta1)*Math.cos(phi1),r*Math.cos(theta1),r*Math.sin(theta1)*Math.sin(phi1));
+    const e=new THREE.Vector3(r*Math.sin(theta2)*Math.cos(phi2),r*Math.cos(theta2),r*Math.sin(theta2)*Math.sin(phi2));
+    const ctrl=new THREE.Vector3((s.x+e.x)/2,(s.y+e.y)/2,(s.z+e.z)/2);
+    ctrl.normalize().multiplyScalar(r+1.2);
+    const curve=new THREE.QuadraticBezierCurve3(s,ctrl,e);
+    const lineGeo=new THREE.BufferGeometry().setFromPoints(curve.getPoints(50));
+    const lineMat=new THREE.LineBasicMaterial({color:0xFF3CAC,transparent:true,opacity:.0});
+    const line=new THREE.Line(lineGeo,lineMat);
+    scene.add(line);
+    attackLines.push({line,age:0,maxAge:180,lineMat});
+  }
+  for(let i=0;i<6;i++)createAttackLine();
+  scene.add(new THREE.AmbientLight(0xffffff,.3));
+  const dLight=new THREE.DirectionalLight(0x00F5FF,.8);dLight.position.set(5,5,5);scene.add(dLight);
+  const pLight=new THREE.PointLight(0x7A5FFF,.5,10);pLight.position.set(-3,0,3);scene.add(pLight);
+  const nodeMat=new THREE.MeshBasicMaterial({color:0x00F5FF});
+  for(let i=0;i<30;i++){
+    const phi=Math.random()*Math.PI*2,theta=Math.random()*Math.PI,r=2.06;
+    const node=new THREE.Mesh(new THREE.SphereGeometry(.025,8,8),nodeMat.clone());
+    node.position.set(r*Math.sin(theta)*Math.cos(phi),r*Math.cos(theta),r*Math.sin(theta)*Math.sin(phi));
+    scene.add(node);
+  }
+  let time=0;
+  function animate(){
+    requestAnimationFrame(animate);time+=.005;
+    globe.rotation.y=time*.3;wireSphere.rotation.y=time*.3;
+    particles.rotation.y=time*.05;particles.rotation.x=time*.02;
+    attackLines.forEach((a,idx)=>{
+      a.age++;
+      if(a.age<60){a.lineMat.opacity=a.age/60*.6;}else if(a.age>120){a.lineMat.opacity=(180-a.age)/60*.6;}
+      if(a.age>=a.maxAge){scene.remove(a.line);attackLines.splice(idx,1);createAttackLine();}
+    });
+    renderer.render(scene,camera);
+  }
+  animate();
+  window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
+  document.addEventListener('mousemove',e=>{
+    const nx=(e.clientX/window.innerWidth-.5)*.5,ny=(e.clientY/window.innerHeight-.5)*.5;
+    camera.position.x+=(nx-camera.position.x)*.05;camera.position.y+=(-ny-camera.position.y)*.05;camera.lookAt(scene.position);
+  });
+})();
+
+// ════════════════════════════════════════════
+//  BACKGROUND PARTICLES
+// ════════════════════════════════════════════
+(function(){
+  const c=document.getElementById('particle-canvas');const ctx=c.getContext('2d');
+  c.width=window.innerWidth;c.height=window.innerHeight;
+  const pts=Array.from({length:80},()=>({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*2+.5}));
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>c.width)p.vx*=-1;if(p.y<0||p.y>c.height)p.vy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(0,245,255,.4)';ctx.fill();});
+    pts.forEach((a,i)=>{pts.slice(i+1).forEach(b=>{const dx=a.x-b.x,dy=a.y-b.y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<150){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=`rgba(0,245,255,${.08*(1-dist/150)})`;ctx.lineWidth=.5;ctx.stroke();}});});
+    requestAnimationFrame(draw);
+  }
+  draw();
+  window.addEventListener('resize',()=>{c.width=window.innerWidth;c.height=window.innerHeight;});
+})();
+
+// ════════════════════════════════════════════
+//  SCROLL ANIMATIONS
+// ════════════════════════════════════════════
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      const num=e.target.querySelector('.stat-num[data-count]');
+      if(num&&!num.dataset.animated){
+        num.dataset.animated='1';
+        const target=parseFloat(num.dataset.count);const isDecimal=target%1!==0;
+        let s=null;
+        function step(ts){if(!s)s=ts;const p=Math.min((ts-s)/1500,1);num.textContent=isDecimal?(p*target).toFixed(1):Math.floor(p*target);if(p<1)requestAnimationFrame(step);}
+        requestAnimationFrame(step);
+      }
+      e.target.querySelectorAll('.mini-fill[data-fill]').forEach(b=>{if(!b.dataset.animated){b.dataset.animated='1';setTimeout(()=>{b.style.width=b.dataset.fill+'%';},200);}});
+    }
+  });
+},{threshold:.1});
+document.querySelectorAll('.fade-up,.stat-card,.glass-card,.kc-step,.risk-card,.defense-card,.tech-item,.team-card,.algo-card,.soc-dashboard').forEach(el=>observer.observe(el));
+
+// ════════════════════════════════════════════
+//  NEURAL NETWORK
+// ════════════════════════════════════════════
+(function(){
+  const c=document.getElementById('nn-canvas');if(!c)return;
+  const ctx=c.getContext('2d');
+  function resize(){c.width=c.offsetWidth;c.height=c.offsetHeight;}
+  resize();
+  const lCounts=[3,5,8,5,3];const lCount=lCounts.length;
+  const nodes=[];
+  lCounts.forEach((n,li)=>{for(let i=0;i<n;i++){nodes.push({x:(li/(lCount-1))*(c.width-80)+40,y:(i/(n-1||1))*(c.height-40)+20,layer:li,idx:i,n});}});
+  const signals=[];
+  function addSignal(){
+    const src=nodes.filter(n=>n.layer<lCount-1);const n1=src[Math.floor(Math.random()*src.length)];
+    const next=nodes.filter(n=>n.layer===n1.layer+1);const n2=next[Math.floor(Math.random()*next.length)];
+    if(n1&&n2)signals.push({x:n1.x,y:n1.y,tx:n2.x,ty:n2.y,p:0,color:Math.random()>.5?'#00F5FF':'#7A5FFF'});
+  }
+  setInterval(addSignal,200);
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    for(let li=0;li<lCount-1;li++){
+      const curr=nodes.filter(n=>n.layer===li);const next=nodes.filter(n=>n.layer===li+1);
+      curr.forEach(a=>next.forEach(b=>{const grad=ctx.createLinearGradient(a.x,a.y,b.x,b.y);grad.addColorStop(0,'rgba(0,245,255,.06)');grad.addColorStop(1,'rgba(122,95,255,.06)');ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=grad;ctx.lineWidth=.8;ctx.stroke();}));
+    }
+    signals.forEach((s,i)=>{
+      s.p+=.02;const cx=s.x+(s.tx-s.x)*s.p,cy=s.y+(s.ty-s.y)*s.p;
+      ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fillStyle=s.color;ctx.fill();
+      if(s.p>=1)signals.splice(i,1);
+    });
+    nodes.forEach(n=>{
+      const pulse=Math.sin(t*2+n.idx*0.5+n.layer)*0.3+0.7;
+      const col=n.layer===2?'#7A5FFF':'#00F5FF';
+      ctx.shadowColor=col;ctx.shadowBlur=10*pulse;
+      ctx.beginPath();ctx.arc(n.x,n.y,5*pulse,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+      ctx.shadowBlur=0;
+    });
+    t+=.02;requestAnimationFrame(draw);
+  }
+  draw();
+  window.addEventListener('resize',()=>{resize();nodes.length=0;lCounts.forEach((n,li)=>{for(let i=0;i<n;i++){nodes.push({x:(li/(lCount-1))*(c.width-80)+40,y:(i/(n-1||1))*(c.height-40)+20,layer:li,idx:i,n});}});});
+})();
+
+// ════════════════════════════════════════════
+//  ANOMALY GRAPH
+// ════════════════════════════════════════════
+(function(){
+  const c=document.getElementById('anomaly-canvas');if(!c)return;
+  const ctx=c.getContext('2d');
+  function resize(){c.width=c.offsetWidth;c.height=c.offsetHeight||150;}
+  resize();
+  const data=[];for(let i=0;i<100;i++){data.push(i>70&&i<80?Math.random()*60+40:Math.random()*20+5);}
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);const w=c.width/data.length,h=c.height-20;
+    ctx.strokeStyle='rgba(0,245,255,.15)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(0,h*.3);ctx.lineTo(c.width,h*.3);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(0,245,255,.06)';ctx.strokeStyle='rgba(0,245,255,.5)';ctx.lineWidth=1.5;
+    ctx.beginPath();
+    data.forEach((d,i)=>{const x=i*w,y=h-d/100*h;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});
+    ctx.lineTo(c.width,h);ctx.lineTo(0,h);ctx.closePath();ctx.fill();
+    ctx.beginPath();data.forEach((d,i)=>{const x=i*w,y=h-d/100*h;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.stroke();
+    ctx.fillStyle='rgba(255,60,172,.15)';ctx.beginPath();ctx.moveTo(70*w,h);
+    for(let i=70;i<=80;i++){ctx.lineTo(i*w,h-data[i]/100*h);}ctx.lineTo(80*w,h);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(255,60,172,.8)';ctx.font='10px Share Tech Mono';ctx.fillText('ANOMALY SPIKE',73*w,h-data[75]/100*h-12);
+    ctx.fillStyle='rgba(0,245,255,.5)';ctx.font='10px Share Tech Mono';ctx.fillText('NORMAL BASELINE',4,h*.3-6);
+    ctx.fillStyle='var(--text-dim)';ctx.font='10px Rajdhani';ctx.fillText('ANOMALY SCORE TIMELINE',4,12);
+  }
+  draw();window.addEventListener('resize',()=>{resize();draw();});
+})();
+
+// ════════════════════════════════════════════
+//  RADAR
+// ════════════════════════════════════════════
+(function(){
+  const c=document.getElementById('radar-canvas');if(!c)return;
+  const ctx=c.getContext('2d');
+  function resize(){c.width=c.offsetWidth;c.height=c.offsetHeight||160;}
+  resize();
+  const cx2=c.width/2,cy2=c.height/2,r=Math.min(cx2,cy2)-10;
+  let angle=0;
+  const blips=[];for(let i=0;i<8;i++){blips.push({a:Math.random()*Math.PI*2,d:Math.random()*.8+.1,life:0,maxLife:120});}
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    [.2,.4,.6,.8,1].forEach(f=>{ctx.beginPath();ctx.arc(cx2,cy2,r*f,0,Math.PI*2);ctx.strokeStyle=`rgba(0,245,255,${.08+f*.04})`;ctx.lineWidth=1;ctx.stroke();});
+    ctx.strokeStyle='rgba(0,245,255,.1)';
+    ctx.beginPath();ctx.moveTo(cx2,cy2-r);ctx.lineTo(cx2,cy2+r);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx2-r,cy2);ctx.lineTo(cx2+r,cy2);ctx.stroke();
+    ctx.save();ctx.translate(cx2,cy2);
+    for(let i=0;i<40;i++){const a2=angle-i*.06;const opacity=Math.max(0,(40-i)/40)*.3;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,r,a2-.03,a2+.03);ctx.closePath();ctx.fillStyle=`rgba(0,245,255,${opacity})`;ctx.fill();}
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(angle)*r,Math.sin(angle)*r);ctx.strokeStyle='rgba(0,245,255,.8)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.restore();
+    blips.forEach(b=>{
+      b.life++;if(b.life>b.maxLife){b.a=Math.random()*Math.PI*2;b.d=Math.random()*.8+.1;b.life=0;}
+      const bx=cx2+Math.cos(b.a)*r*b.d,by=cy2+Math.sin(b.a)*r*b.d;
+      const pulse=Math.sin(b.life*.15)*0.5+0.5;
+      ctx.beginPath();ctx.arc(bx,by,3+pulse*2,0,Math.PI*2);ctx.fillStyle=`rgba(255,60,172,${.5+pulse*.5})`;ctx.fill();
+    });
+    angle+=.03;requestAnimationFrame(draw);
+  }
+  draw();window.addEventListener('resize',()=>resize());
+})();
+
+// ════════════════════════════════════════════
+//  ATTACK MAP
+// ════════════════════════════════════════════
+(function(){
+  const c=document.getElementById('attack-map-canvas');if(!c)return;
+  const ctx=c.getContext('2d');
+  function resize(){c.width=c.offsetWidth;c.height=c.offsetHeight||200;}
+  resize();
+  const cities=[{x:.2,y:.3},{x:.15,y:.55},{x:.48,y:.25},{x:.52,y:.28},{x:.55,y:.22},{x:.72,y:.3},{x:.8,y:.35},{x:.85,y:.55},{x:.6,y:.6},{x:.35,y:.35},{x:.25,y:.28},{x:.18,y:.4}];
+  const attacks=[];
+  function newAttack(){
+    const s=cities[Math.floor(Math.random()*cities.length)];let t=cities[Math.floor(Math.random()*cities.length)];
+    while(t===s)t=cities[Math.floor(Math.random()*cities.length)];
+    attacks.push({sx:s.x,sy:s.y,tx:t.x,ty:t.y,p:0,hostile:Math.random()>.4});
+  }
+  for(let i=0;i<4;i++)newAttack();setInterval(newAttack,1200);
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);const W=c.width,H=c.height;
+    ctx.strokeStyle='rgba(0,245,255,.04)';ctx.lineWidth=1;
+    for(let x=0;x<W;x+=W/8){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=H/4){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    cities.forEach(city=>{
+      const cx2=city.x*W,cy2=city.y*H;
+      ctx.beginPath();ctx.arc(cx2,cy2,3,0,Math.PI*2);ctx.fillStyle='rgba(0,245,255,.8)';ctx.fill();
+      ctx.beginPath();ctx.arc(cx2,cy2,6+Math.random()*2,0,Math.PI*2);ctx.strokeStyle='rgba(0,245,255,.2)';ctx.lineWidth=1;ctx.stroke();
+    });
+    attacks.forEach((a,i)=>{
+      a.p+=.008;const cx2=a.sx*W+(a.tx-a.sx)*W*a.p,cy2=a.sy*H+(a.ty-a.sy)*H*a.p;
+      ctx.beginPath();ctx.moveTo(a.sx*W,a.sy*H);ctx.lineTo(cx2,cy2);
+      ctx.strokeStyle=a.hostile?'rgba(255,60,172,.6)':'rgba(0,245,255,.4)';ctx.lineWidth=1;ctx.stroke();
+      ctx.beginPath();ctx.arc(cx2,cy2,3,0,Math.PI*2);ctx.fillStyle=a.hostile?'#FF3CAC':'#00F5FF';ctx.fill();
+      if(a.p>=1)attacks.splice(i,1);
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();window.addEventListener('resize',()=>resize());
+})();
+
+// ════════════════════════════════════════════
+//  LIVE LOG + CLOCK
+// ════════════════════════════════════════════
+function updateClock(){document.getElementById('dash-time').textContent=new Date().toISOString().slice(11,19)+' UTC';}
+setInterval(updateClock,1000);updateClock();
+
+const logEvents=[
+  ['BRUTE_FORCE_AUTH','BLOCKED','#00FF88'],['SQL_INJECTION','BLOCKED','#00FF88'],
+  ['PRIV_ESCALATION','ALERT','#FF3CAC'],['DATA_EXFIL_ATTEMPT','CRITICAL','#FF3CAC'],
+  ['PORT_SCAN','BLOCKED','#00FF88'],['ANOMALY_DETECTED','REVIEW','#FFD700'],
+  ['MALWARE_CALLBACK','BLOCKED','#00FF88'],['LATERAL_MOVEMENT','CRITICAL','#FF3CAC'],
+];
+function addLogLine(){
+  const logEl=document.getElementById('threat-log');
+  const evt=logEvents[Math.floor(Math.random()*logEvents.length)];
+  const ip=`${Math.floor(Math.random()*250)+2}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+  const time=new Date().toISOString().slice(11,19);
+  const div=document.createElement('div');div.className='log-line';
+  div.innerHTML=`<span class="log-time">${time}</span><span class="log-ip">${ip}</span><span class="log-evt">${evt[0]}</span><span style="color:${evt[2]};margin-left:auto;">${evt[1]}</span>`;
+  logEl.insertBefore(div,logEl.firstChild);
+  if(logEl.children.length>8)logEl.removeChild(logEl.lastChild);
+}
+setInterval(addLogLine,2500);
+
+// ════════════════════════════════════════════
+//  SCROLL NAV
+// ════════════════════════════════════════════
+window.addEventListener('scroll',()=>{
+  const nav=document.getElementById('navbar');
+  nav.style.background=window.scrollY>50?'rgba(5,6,10,.95)':'rgba(5,6,10,.8)';
+  const sections=['hero','problem','architecture','ai-engine','attack-chain','risk-scoring','dashboard','team'];
+  const dots=document.querySelectorAll('.side-dot');
+  sections.forEach((id,i)=>{const el=document.getElementById(id);if(el){const rect=el.getBoundingClientRect();dots[i]?.classList.toggle('active',rect.top<=200&&rect.bottom>200);}});
+});
+
+// ════════════════════════════════════════════
+//  GSAP
+// ════════════════════════════════════════════
+if(typeof gsap!=='undefined'&&typeof ScrollTrigger!=='undefined'){
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.from('.hero-title',{y:60,opacity:0,duration:1.2,ease:'power3.out',delay:.3});
+  gsap.from('.hero-sub',{y:40,opacity:0,duration:1,ease:'power3.out',delay:.6});
+  gsap.from('.hero-btns',{y:30,opacity:0,duration:.8,ease:'power3.out',delay:.9});
+  gsap.from('.hero-stats',{y:30,opacity:0,duration:.8,ease:'power3.out',delay:1.1});
+  gsap.from('.hero-badge',{opacity:0,scale:.9,duration:.6,delay:.2});
+}
+</script>
+</body>
+</html>
